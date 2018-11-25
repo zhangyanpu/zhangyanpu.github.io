@@ -33,7 +33,7 @@
 						"tread_num": 0,
 						"praise_num_new": 3,
 						"unit": "例",
-						"description": " ",
+						"description": "",
 						"picture": "http://p0.meituan.net/xianfu/35f41c0badc69352b886cc34080f1f9a232448.png",
 						"month_saled": 154,
 						"month_saled_content": "月售154",
@@ -2367,7 +2367,7 @@
 		"poi_info": {
 			"name": "深圳麦当劳明智餐厅",
 			"shipping_time": "00:00-04:45,05:00-10:15,10:30-23:59",
-			"wm_poi_score":3.7,
+			"wm_poi_score":4.7,
 			"discounts2": [
 				{
 					"info": "新用户立减17元,首次使用银行卡支付最高再减3元",
