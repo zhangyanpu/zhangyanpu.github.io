@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Template • TodoMVC</title>
+	<link rel="stylesheet" href="node_modules/todomvc-common/base.css">
+	<link rel="stylesheet" href="node_modules/todomvc-app-css/index.css">
+	<!-- CSS overrides - remove if you don't need it -->
+	<link rel="stylesheet" href="css/app.css">
+</head>
+
+<body>
+	<section class="todoapp" id="todoapp">
+		<!-- 允许是父元素的id -->
+		<header class="header">
+			<!-- <h1 id="todoapp">{{msg}}</h1> -->
+			<!-- <h1 >{{msg}}</h1> -->
+			<h1>todos</h1>
+			<!-- 用Vue框架时，在网页中用autofocus，自动获取焦点，不稳定
+			在移动端的苹果手机不支持autofocus -->
+			<!-- <input class="new-todo" placeholder="What needs to be done?" autofocus @keyup.enter="addTodo"> -->
+			<input class="new-todo" placeholder="What needs to be done?" v-focus @keyup.enter="addTodo">
+		</header>
+		<!-- This section should be hidden by default and shown when there are todos -->
+		<!--//4.v-if来访问data里面的属性值为false的属性，隐藏标签里面的内容
+			 <section class="main" v-if="isseen"> -->
+		<!-- 5.v-if访问数组的长度，若长度不为0，代表true，不隐藏，若长度
+			为0，代表false，隐藏内容，把需隐藏内容的两个标签套一个div，对div设置一个
+			v-if，简化代码 -->
+		<!-- 6.对新套的div设置v-if -->
+		<!-- <section class="main" v-if="todos.length"> -->
+		<!-- 7.把div变为template，即简化了代码，不影响网页结构，（不会
+			多出div标签 -->
+		<!-- <div v-if="todos.length"> -->
+		<template v-if="todos.length">
+			<section class="main">
+				<input id="toggle-all" class="toggle-all" v-model="toggleAllStat" type="checkbox" @click="toggleAll">
+				<label for="toggle-all">Mark all as complete</label>
+				<ul class="todo-list">
+					<!-- These are here just to show the structure of the list items -->
+					<!-- List items should get the class `editing` when editing and `completed` when marked as completed -->
+					<!-- 3.v-for列表循环方法渲染数组内所有元素-->
+					<!--//第四大步 对任务项的处理（1切换任务完成的状态，即选中任务左侧
+						的复选框，加上completed样式，反之，移除,由于已在复选框上进行双向数据绑定，
+						故通过是否选中复选框，来影响item.completed的bool值）
+						 <li :class="{completed:false}" v-for="item in todos"> -->
+					<!-- <li :class="{completed:item.completed}" v-for="item in todos"> -->
+					<!-- <li :class="{completed:item.completed}" 
+								v-for="(item,index) of todos"> -->
+					<!-- 七 1 -->
+					<!-- <li :class="{completed:item.completed,editing:currentItem==item}" 
+								v-for="(item,index) of todos"> -->
+					<!-- 八 1 -->
+					<li :class="{completed:item.completed,editing:currentItem==item}" v-for="(item,index) of filterTodos">
+						<div class="view">
+							<!-- <input class="toggle" type="checkbox" checked > -->
+							<input class="toggle" type="checkbox" v-model="item.completed">
+							<!-- //2.用数组下标的方法显示某个数组元素
+							<label>Taste JavaScript</label> -->
+							<!-- <label>{{todos[0].title}}</label>
+						 -->
+							<!-- <label>{{item.title}}</label> -->
+							<!-- 七 2 双击label，加edting样式，换第二个label双击，第一个label的edting样式清除 -->
+							<!-- <label  @dblclick="currentItem=item">{{item.title}}</label> -->
+							<!-- 最后一步，双击label，自动获取焦点，方法1 -->
+							<!-- <label v-editing-focus="item===currentItem" @dblclick="currentItem=item">{{item.title}}</label> -->
+							<label  @dblclick="currentItem=item">{{item.title}}</label>
+							<button class="destroy" @click="removeTodo(index, $event)"></button>
+						</div>
+						<!-- 七 3双击label，让input显示对应的任务，失去焦点，清除edting样式，修改任务，失去焦点，自动保存
+						视图的改变，数据跟着改变，用双向数据绑定 -->
+						<!-- <input class="edit" @blur="currentItem=false" v-model:value="item.title"> -->
+						<!-- 七 4用类似于@keyup.esc="console.log(111)"行内式测试写法，实现了输入过程中按esc键，取消编辑模式，
+						并不保存，故用:value="item.title"单向数据绑定-->
+						<!-- <input class="edit"@keyup.esc="currentItem=false" @blur="currentItem=false" :value="item.title"> -->
+						<!-- 七 5 输入非空数据按回车或失去焦点自动保存，输入空数据按回车或失去焦点直接删除该项 -->
+						<!-- <input class="edit" @keyup.esc="currentItem=false" @keyup.enter="saveEdit(item,index,$event)" @blur="saveEdit(item,index,$event)"
+						:value="item.title"> -->
+						<input class="edit" v-editing-focus="item===currentItem" @keyup.esc="currentItem=false" @keyup.enter="saveEdit(item,index,$event)" @blur="saveEdit(item,index,$event)"
+						:value="item.title">
+						<!-- 传index，是为了删除任务项，传item是为了保存任务项，传$event,
+							避免其他的形参影响了event事件对象的使用 -->
+					</li>
+					<li>
+						<!-- <div class="view">
+						<input class="toggle" type="checkbox">
+						<label>Buy a unicorn</label>
+						<button class="destroy"></button>
+					</div> -->
+						<input class="edit" value="Rule the web">
+					</li>
+				</ul>
+			</section>
+			<!-- This footer should hidden by default and shown when there are todos -->
+			<!-- <footer class="footer" v-if="isseen"> -->
+			<!-- <footer class="footer" v-if="todos.length"> -->
+			<footer class="footer">
+
+				<!-- This should be `0 items left` by default -->
+				<span class="todo-count">
+					<!--模板中调用函数  将来函数的返回值会渲染,当绑定函数所在的视图模板,
+				(由于复选框上有双向数据绑定，用class属性值completed做纽带，
+				当添加任务，选中或取消复选框，都会执行该函数)发生更新该函数会被重新执行 -->
+					<!-- <strong>{{leftNum()}}</strong> item left</span> -->
+					<strong>{{leftNum}}</strong> item left</span>
+				<!-- <strong>{{leftNum}}</strong> item left</span>
+					<strong>{{leftNum}}</strong> item left</span> -->
+				<!-- Remove this if you don't implement routing -->
+				<!--延伸 为过滤状态a添加链接样式的另一种方法，用自定义指令对dom操作，利用排他思想 -->
+				<ul class="filters" v-auto-active>
+					<!-- 八 3 过滤状态a连接的样式 -->
+					<li>
+						<a class="selected" href="#/">All</a>
+						<!-- <a :class="{selected:filterStat==='all'}" href="#/">All</a> -->
+					</li>
+					<li>
+						<!-- <a :class="{selected:filterStat==='active'}" href="#/active">Active</a> -->
+						<a href="#/active">Active</a>
+					</li>
+					<li>
+						<!-- <a :class="{selected:filterStat==='completed'}" href="#/completed">Completed</a> -->
+						<a href="#/completed">Completed</a>
+					</li>
+				</ul>
+				<!-- Hidden if no completed items are left ↓ -->
+				<button class="clear-completed" @click="removeCompleted">Clear completed</button>
+			</footer>
+		</template>
+	</section>
+	<footer class="info">
+		<p>Double-click to edit a todo</p>
+		<!-- Remove the below line ↓ -->
+		<p>Template by
+			<a href="http://sindresorhus.com">Sindre Sorhus</a>
+		</p>
+		<!-- Change this out with your name and url ↓ -->
+		<p>Created by
+			<a href="http://todomvc.com">you</a>
+		</p>
+		<p>Part of
+			<a href="http://todomvc.com">TodoMVC</a>
+		</p>
+	</footer>
+	<!-- Scripts here. Don't remove ↓ -->
+	<script src="node_modules/todomvc-common/base.js"></script>
+	<script src="node_modules/vue/dist/vue.min.js"></script>
+	<script src="js/app.js"></script>
+
+</body>
+
+</html>
